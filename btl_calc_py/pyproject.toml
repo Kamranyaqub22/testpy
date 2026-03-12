@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "btl_calc_py"
+version = "0.1.0"
+description = "A Python project for BTL calculations."
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+# Add other dependencies here as needed
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
