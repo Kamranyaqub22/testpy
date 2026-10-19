@@ -39,3 +39,7 @@ Troubleshooting 403 when opening http://127.0.0.1:5000/
    # or (Linux) netstat -ltnp | grep 5000
 
 If you run the server and /status returns ok but accessing / still gives 403, check file permissions (step 3) and paste the console log lines from app.py here and I'll help interpret them.
+
+## Horizon Bank (Flutter)
+
+A cross-platform banking app (Android, iOS, web, Windows, macOS, Linux) built from one Flutter codebase lives in [`banking_app/`](banking_app/README.md).
