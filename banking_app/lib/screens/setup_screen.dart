@@ -77,7 +77,19 @@ class _SetupScreenState extends State<SetupScreen> {
                       'Demo accounts with sample activity will be added.',
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
+                    Card(
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                      child: const ListTile(
+                        leading: Icon(Icons.info_outline),
+                        title: Text('Demo app – not a real bank'),
+                        subtitle: Text(
+                          'Data stays on this device. Do not use a real '
+                          'banking PIN or password.',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     TextFormField(
                       controller: _name,
                       decoration: const InputDecoration(labelText: 'Full name'),

@@ -1,0 +1,26 @@
+name: banking_app
+
+on:
+  push:
+    paths: ['banking_app/**', '.github/workflows/banking_app.yml']
+  pull_request:
+    paths: ['banking_app/**', '.github/workflows/banking_app.yml']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: banking_app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build web --release
