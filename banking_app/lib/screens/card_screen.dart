@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../state/bank_controller.dart';
 import '../widgets/common.dart';
-import '../widgets/theme.dart';
 import 'passcode_sheet.dart';
 
 class CardScreen extends StatefulWidget {
@@ -86,13 +86,13 @@ class _CardScreenState extends State<CardScreen> {
               ),
             ),
             for (final r in const [
-              ('lost', '🔍', 'I’ve lost it'),
-              ('stolen', '🚨', 'It’s been stolen'),
-              ('damaged', '🪫', 'It’s damaged or not working'),
+              ('lost', HzIcons.search, 'I’ve lost it'),
+              ('stolen', HzIcons.report, 'It’s been stolen'),
+              ('damaged', HzIcons.warning, 'It’s damaged or not working'),
             ])
               ListTile(
                 key: Key('reason-${r.$1}'),
-                leading: Text(r.$2, style: const TextStyle(fontSize: 24)),
+                leading: Icon(r.$2, color: context.hz.inkMuted),
                 title: Text(r.$3),
                 onTap: () => Navigator.pop(sheet, r.$1),
               ),
@@ -116,7 +116,7 @@ class _CardScreenState extends State<CardScreen> {
     if (mounted) {
       showBanner(
         context,
-        emoji: '📬',
+        icon: HzIcons.mail,
         title: 'New card ordered',
         body:
             'It’ll arrive in 3–5 working days. Use the new details online now.',
@@ -189,7 +189,7 @@ class _CardScreenState extends State<CardScreen> {
     }) => SwitchListTile(
       key: key,
       secondary: Icon(icon),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+      title: Text(title),
       subtitle: Text(subtitle),
       value: value,
       onChanged: onChanged,
@@ -228,7 +228,7 @@ class _CardScreenState extends State<CardScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        icon: const Icon(Icons.copy_rounded),
+                        icon: const Icon(HzIcons.copy),
                         label: const Text('Copy number'),
                         onPressed: () => copyToClipboard(
                           context,
@@ -246,15 +246,17 @@ class _CardScreenState extends State<CardScreen> {
                 child: Panel(
                   child: ListTile(
                     key: const Key('activateCard'),
-                    leading: const Text('📬', style: TextStyle(fontSize: 26)),
-                    title: const Text(
-                      'Your new card is on its way',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                    leading: IconTile(
+                      icon: HzIcons.mail,
+                      color: context.hz.brand,
+                      size: 40,
+                      circle: true,
                     ),
+                    title: const Text('Your new card is on its way'),
                     subtitle: const Text(
                       'Tap here to activate it when it arrives',
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    trailing: const Icon(HzIcons.chevron),
                     onTap: _activate,
                   ),
                 ),
@@ -267,7 +269,7 @@ class _CardScreenState extends State<CardScreen> {
                   Expanded(
                     child: QuickAction(
                       key: const Key('freezeCard'),
-                      icon: Icons.ac_unit_rounded,
+                      icon: HzIcons.freeze,
                       label: card.frozen ? 'Unfreeze' : 'Freeze',
                       highlighted: card.frozen,
                       onTap: () => bank.setCardFrozen(!card.frozen),
@@ -276,9 +278,7 @@ class _CardScreenState extends State<CardScreen> {
                   Expanded(
                     child: QuickAction(
                       key: const Key('showDetails'),
-                      icon: _revealed
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
+                      icon: _revealed ? HzIcons.hide : HzIcons.show,
                       label: _revealed ? 'Hide details' : 'Show details',
                       onTap: _toggleReveal,
                     ),
@@ -286,7 +286,7 @@ class _CardScreenState extends State<CardScreen> {
                   Expanded(
                     child: QuickAction(
                       key: const Key('viewPin'),
-                      icon: Icons.pin_outlined,
+                      icon: HzIcons.pin,
                       label: 'View PIN',
                       onTap: _showPin,
                     ),
@@ -300,13 +300,13 @@ class _CardScreenState extends State<CardScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Brand.frost.withValues(alpha: .5),
-                    borderRadius: BorderRadius.circular(16),
+                    color: context.hz.frost,
+                    borderRadius: BorderRadius.circular(HzRadius.md),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Your card is frozen. Card payments and cash withdrawals '
                     'will be declined. Direct Debits and transfers still work.',
-                    style: TextStyle(color: Brand.ink),
+                    style: HzType.body.copyWith(color: context.hz.onFrost),
                   ),
                 ),
               ),
@@ -317,14 +317,14 @@ class _CardScreenState extends State<CardScreen> {
                   control(
                     'Contactless',
                     'Tap to pay in shops',
-                    Icons.contactless_outlined,
+                    HzIcons.contactless,
                     card.contactless,
                     (v) => bank.updateCardControls(contactless: v),
                   ),
                   control(
                     'Online payments',
                     'Shopping on websites and in apps',
-                    Icons.language_rounded,
+                    HzIcons.online,
                     card.online,
                     (v) => bank.updateCardControls(online: v),
                     key: const Key('onlineToggle'),
@@ -332,21 +332,21 @@ class _CardScreenState extends State<CardScreen> {
                   control(
                     'ATM withdrawals',
                     'Taking out cash',
-                    Icons.local_atm_rounded,
+                    HzIcons.atm,
                     card.atm,
                     (v) => bank.updateCardControls(atm: v),
                   ),
                   control(
                     'Payments abroad',
                     'Use your card outside the UK',
-                    Icons.public_rounded,
+                    HzIcons.abroad,
                     card.abroad,
                     (v) => bank.updateCardControls(abroad: v),
                   ),
                   control(
                     'Block gambling',
                     'Decline payments to betting and gambling sites',
-                    Icons.casino_outlined,
+                    HzIcons.gambling,
                     card.gamblingBlock,
                     (v) => bank.updateCardControls(gamblingBlock: v),
                     key: const Key('gamblingToggle'),
@@ -358,16 +358,10 @@ class _CardScreenState extends State<CardScreen> {
             Panel(
               child: ListTile(
                 key: const Key('lostCard'),
-                leading: const Icon(
-                  Icons.report_gmailerrorred_rounded,
-                  color: Brand.danger,
-                ),
-                title: const Text(
-                  'Report lost, stolen or damaged',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
+                leading: Icon(HzIcons.report, color: context.hz.negative),
+                title: const Text('Report lost, stolen or damaged'),
                 subtitle: const Text('Cancel this card and get a new one'),
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(HzIcons.chevron),
                 onTap: _lostOrStolen,
               ),
             ),

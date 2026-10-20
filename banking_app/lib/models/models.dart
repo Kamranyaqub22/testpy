@@ -56,7 +56,7 @@ class Pot {
   Pot({
     required this.id,
     required this.name,
-    required this.emoji,
+    required this.icon,
     required this.colorValue,
     this.balanceCents = 0,
     this.goalCents,
@@ -64,7 +64,9 @@ class Pot {
 
   final String id;
   String name;
-  String emoji;
+
+  /// Key into `HzIcons.potIcons`, e.g. "palm".
+  String icon;
   int colorValue;
   int balanceCents;
   int? goalCents;
@@ -76,7 +78,7 @@ class Pot {
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
-    'emoji': emoji,
+    'icon': icon,
     'colorValue': colorValue,
     'balanceCents': balanceCents,
     'goalCents': goalCents,
@@ -85,7 +87,7 @@ class Pot {
   factory Pot.fromJson(Map<String, dynamic> j) => Pot(
     id: j['id'] as String,
     name: j['name'] as String,
-    emoji: j['emoji'] as String,
+    icon: j['icon'] as String,
     colorValue: j['colorValue'] as int,
     balanceCents: j['balanceCents'] as int,
     goalCents: j['goalCents'] as int?,
@@ -117,7 +119,6 @@ class BankTransaction {
     required this.kind,
     required this.date,
     this.status = TxStatus.settled,
-    this.emoji,
     this.note,
     this.reference,
     this.location,
@@ -139,7 +140,6 @@ class BankTransaction {
   final TxKind kind;
   final DateTime date;
   TxStatus status;
-  final String? emoji;
   String? note;
   final String? reference;
   final String? location;
@@ -168,7 +168,6 @@ class BankTransaction {
     'kind': kind.name,
     'date': date.toIso8601String(),
     'status': status.name,
-    'emoji': emoji,
     'note': note,
     'reference': reference,
     'location': location,
@@ -186,7 +185,6 @@ class BankTransaction {
     kind: TxKind.values.byName(j['kind'] as String),
     date: DateTime.parse(j['date'] as String),
     status: TxStatus.values.byName(j['status'] as String),
-    emoji: j['emoji'] as String?,
     note: j['note'] as String?,
     reference: j['reference'] as String?,
     location: j['location'] as String?,
@@ -323,7 +321,6 @@ class ScheduledPayment {
     required this.category,
     this.payeeId,
     this.reference,
-    this.emoji,
   });
 
   final String id;
@@ -335,7 +332,6 @@ class ScheduledPayment {
   final TxCategory category;
   final String? payeeId;
   final String? reference;
-  final String? emoji;
 
   DateTime get followingDate => frequency == Frequency.weekly
       ? nextDate.add(const Duration(days: 7))
@@ -351,7 +347,6 @@ class ScheduledPayment {
     'category': category.name,
     'payeeId': payeeId,
     'reference': reference,
-    'emoji': emoji,
   };
 
   factory ScheduledPayment.fromJson(Map<String, dynamic> j) => ScheduledPayment(
@@ -364,7 +359,6 @@ class ScheduledPayment {
     category: TxCategory.values.byName(j['category'] as String),
     payeeId: j['payeeId'] as String?,
     reference: j['reference'] as String?,
-    emoji: j['emoji'] as String?,
   );
 }
 

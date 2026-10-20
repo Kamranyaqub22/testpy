@@ -202,7 +202,7 @@ class BankController extends ChangeNotifier {
           fromName: 'Alex Morgan',
           amountCents: 1850,
           createdAt: t.subtract(const Duration(days: 2)),
-          note: 'Cinema tickets 🎬',
+          note: 'Cinema tickets',
         ),
       ],
       monthlyBudgetCents: 220000,
@@ -472,7 +472,6 @@ class BankController extends ChangeNotifier {
       category: TxCategory.transfers,
       kind: TxKind.fasterPayment,
       reference: req.note,
-      emoji: '👋',
     );
     await _persist();
   }
@@ -489,7 +488,7 @@ class BankController extends ChangeNotifier {
 
   Future<Pot> createPot({
     required String name,
-    required String emoji,
+    required String icon,
     required int colorValue,
     int? goalCents,
   }) async {
@@ -497,7 +496,7 @@ class BankController extends ChangeNotifier {
     final pot = Pot(
       id: _newId(),
       name: name.trim(),
-      emoji: emoji,
+      icon: icon,
       colorValue: colorValue,
       goalCents: goalCents,
     );
@@ -509,13 +508,13 @@ class BankController extends ChangeNotifier {
   Future<void> updatePot(
     String id, {
     String? name,
-    String? emoji,
+    String? icon,
     int? goalCents,
     bool clearGoal = false,
   }) async {
     final pot = potById(id);
     if (name != null && name.trim().isNotEmpty) pot.name = name.trim();
-    if (emoji != null) pot.emoji = emoji;
+    if (icon != null) pot.icon = icon;
     if (clearGoal) {
       pot.goalCents = null;
     } else if (goalCents != null) {
@@ -534,7 +533,6 @@ class BankController extends ChangeNotifier {
       amount: -amountCents,
       category: TxCategory.savings,
       kind: TxKind.pot,
-      emoji: pot.emoji,
       potId: pot.id,
     );
     await _persist();
@@ -555,7 +553,6 @@ class BankController extends ChangeNotifier {
       amount: amountCents,
       category: TxCategory.savings,
       kind: TxKind.pot,
-      emoji: pot.emoji,
       potId: pot.id,
     );
     await _persist();
@@ -753,7 +750,6 @@ class BankController extends ChangeNotifier {
       amount: -amount,
       category: m.category,
       kind: m.kind,
-      emoji: m.emoji,
       location: m.location,
       status: reason == null ? TxStatus.pending : TxStatus.declined,
       declineReason: reason,
@@ -773,7 +769,6 @@ class BankController extends ChangeNotifier {
           amount: -roundUp,
           category: TxCategory.savings,
           kind: TxKind.roundUp,
-          emoji: pot.emoji,
           potId: pot.id,
           date: tx.date.add(const Duration(seconds: 1)),
         );
@@ -787,7 +782,7 @@ class BankController extends ChangeNotifier {
 
   Future<BankTransaction> simulateIncomingPayment() async {
     const senders = [
-      ('Priya Shah', 'Coffee money ☕', 640),
+      ('Priya Shah', 'Coffee money', 640),
       ('Alex Morgan', 'Gig tickets', 4500),
       ('Marketplace Sale', 'Old bike', 12000),
     ];
@@ -799,7 +794,6 @@ class BankController extends ChangeNotifier {
       category: TxCategory.transfers,
       kind: TxKind.fasterPayment,
       reference: s.$2,
-      emoji: '💸',
     );
     await _persist();
     return tx;
@@ -845,7 +839,6 @@ class BankController extends ChangeNotifier {
             kind: s.kind == ScheduleKind.directDebit
                 ? TxKind.directDebit
                 : TxKind.standingOrder,
-            emoji: s.emoji,
             reference: s.reference,
             date: s.nextDate,
           );
@@ -857,7 +850,6 @@ class BankController extends ChangeNotifier {
             kind: s.kind == ScheduleKind.directDebit
                 ? TxKind.directDebit
                 : TxKind.standingOrder,
-            emoji: s.emoji,
             date: s.nextDate,
             status: TxStatus.declined,
             declineReason: 'Not enough money',
@@ -873,7 +865,6 @@ class BankController extends ChangeNotifier {
     required int amount,
     required TxCategory category,
     required TxKind kind,
-    String? emoji,
     String? reference,
     String? location,
     String? potId,
@@ -889,7 +880,6 @@ class BankController extends ChangeNotifier {
       kind: kind,
       date: date ?? now,
       status: status,
-      emoji: emoji,
       reference: reference,
       location: location,
       potId: potId,

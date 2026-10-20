@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../utils/money.dart';
@@ -65,7 +66,7 @@ class PaymentsScreen extends StatelessWidget {
               child: Row(
                 children: [
                   action(
-                    Icons.arrow_upward_rounded,
+                    HzIcons.pay,
                     'Pay someone',
                     'Bank transfer',
                     () => startPayFlow(context),
@@ -73,7 +74,7 @@ class PaymentsScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   action(
-                    Icons.arrow_downward_rounded,
+                    HzIcons.request,
                     'Request',
                     'Get paid back',
                     () => Navigator.push(
@@ -89,13 +90,10 @@ class PaymentsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.event_repeat_rounded),
-                    title: const Text(
-                      'Direct Debits & standing orders',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
+                    leading: const Icon(HzIcons.repeat),
+                    title: const Text('Direct Debits & standing orders'),
                     subtitle: Text('${bank.scheduled.length} active'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    trailing: const Icon(HzIcons.chevron),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -105,17 +103,14 @@ class PaymentsScreen extends StatelessWidget {
                   ),
                   const Divider(indent: 20, endIndent: 20),
                   ListTile(
-                    leading: const Icon(Icons.mark_email_unread_outlined),
-                    title: const Text(
-                      'Requests',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
+                    leading: const Icon(HzIcons.mail),
+                    title: const Text('Requests'),
                     subtitle: Text(
                       pending.isEmpty
                           ? 'Nobody owes you money'
                           : '${pending.length} waiting · ${formatMoney(owed)} owed to you',
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    trailing: const Icon(HzIcons.chevron),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -133,10 +128,7 @@ class PaymentsScreen extends StatelessWidget {
                   for (final p in bank.payees)
                     ListTile(
                       leading: InitialsAvatar(p.name, size: 40),
-                      title: Text(
-                        p.name,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
+                      title: Text(p.name),
                       subtitle: Text(p.maskedDetails),
                       trailing: PopupMenuButton<String>(
                         tooltip: 'Payee options',
@@ -174,7 +166,7 @@ class PaymentsScreen extends StatelessWidget {
                       onTap: () => startPayFlow(context, payee: p),
                     ),
                   ListTile(
-                    leading: const Icon(Icons.person_add_alt_1_rounded),
+                    leading: const Icon(HzIcons.addPerson),
                     title: const Text('Add a new payee'),
                     textColor: theme.colorScheme.primary,
                     iconColor: theme.colorScheme.primary,

@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
+import '../design/hz.dart';
+
 import 'package:flutter/services.dart';
 
 import '../utils/money.dart';
-import 'theme.dart';
 
 /// On-screen number pad shared by the passcode and amount screens.
 /// Also accepts a physical keyboard on desktop and web.
@@ -66,7 +68,7 @@ class NumberPad extends StatelessWidget {
               key(
                 'back',
                 onTap: onBackspace,
-                child: const Icon(Icons.backspace_outlined, size: 26),
+                child: const Icon(HzIcons.backspace, size: 26),
               ),
             ],
           ),
@@ -237,12 +239,12 @@ class _PasscodeEntryState extends State<PasscodeEntry>
                       shape: BoxShape.circle,
                       color: i < _code.length
                           ? (_error != null
-                                ? Brand.danger
+                                ? context.hz.negative
                                 : theme.colorScheme.primary)
                           : Colors.transparent,
                       border: Border.all(
                         color: _error != null
-                            ? Brand.danger
+                            ? context.hz.negative
                             : theme.colorScheme.onSurfaceVariant,
                         width: 2,
                       ),
@@ -257,8 +259,8 @@ class _PasscodeEntryState extends State<PasscodeEntry>
               child: Text(
                 _error ?? '',
                 key: const Key('passcodeError'),
-                style: const TextStyle(
-                  color: Brand.danger,
+                style: TextStyle(
+                  color: context.hz.negative,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -342,7 +344,7 @@ class _AmountEntryState extends State<AmountEntry> {
             widget.errorText ?? widget.helper ?? '',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: widget.errorText != null
-                  ? Brand.danger
+                  ? context.hz.negative
                   : theme.colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),

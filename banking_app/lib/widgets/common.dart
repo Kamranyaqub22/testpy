@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../utils/money.dart';
-import 'theme.dart';
 
 /// Above this width the app uses a side rail and wider layouts.
 const wideLayoutBreakpoint = 840.0;
@@ -29,12 +29,12 @@ class ResponsiveBody extends StatelessWidget {
   );
 }
 
-/// Large balance with smaller pence, e.g. £1,234.56.
+/// Large balance with smaller pence, e.g. £1,234.56 (`amount-hero`).
 class BalanceText extends StatelessWidget {
   const BalanceText(
     this.cents, {
     super.key,
-    this.size = 44,
+    this.size = 46,
     this.hidden = false,
     this.color,
   });
@@ -46,18 +46,13 @@ class BalanceText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? Theme.of(context).colorScheme.onSurface;
-    if (hidden) {
-      return Text(
-        '£ ••••',
-        style: TextStyle(
-          fontSize: size,
-          fontWeight: FontWeight.w800,
-          color: c,
-          letterSpacing: -1,
-        ),
-      );
-    }
+    final style = HzType.amountHero.copyWith(
+      fontSize: size,
+      height: 1.13,
+      letterSpacing: -size * .026,
+      color: color ?? context.hz.ink,
+    );
+    if (hidden) return Text('£ ••••', style: style);
     final parts = splitMoney(cents);
     return Text.rich(
       TextSpan(
@@ -69,61 +64,77 @@ class BalanceText extends StatelessWidget {
           ),
         ],
       ),
-      style: TextStyle(
-        fontSize: size,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.2,
-        color: c,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
+      style: style,
     );
   }
 }
 
-/// Merchant "logo": an emoji or category icon on a tinted circle.
+/// An icon on a tile tinted with the same colour at 14%. Used for merchant
+/// avatars, pots, notices and settings rows.
+class IconTile extends StatelessWidget {
+  const IconTile({
+    super.key,
+    required this.icon,
+    required this.color,
+    this.size = HzSize.avatar,
+    this.circle = false,
+  });
+
+  final IconData icon;
+  final Color color;
+  final double size;
+  final bool circle;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .14),
+      shape: circle ? BoxShape.circle : BoxShape.rectangle,
+      borderRadius: circle ? null : BorderRadius.circular(size * .32),
+    ),
+    child: Icon(icon, color: color, size: size * .48),
+  );
+}
+
+/// Merchant "logo": the category icon on its tinted tile. Declined payments
+/// get a small block badge.
 class MerchantAvatar extends StatelessWidget {
   const MerchantAvatar({
     super.key,
-    this.emoji,
     required this.category,
-    this.size = 44,
+    this.size = HzSize.avatar,
     this.declined = false,
   });
 
-  final String? emoji;
   final TxCategory category;
   final double size;
   final bool declined;
 
   @override
   Widget build(BuildContext context) {
-    final color = declined ? Colors.grey : category.color;
+    final hz = context.hz;
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Container(
-          width: size,
-          height: size,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: .16),
-            borderRadius: BorderRadius.circular(size * .32),
-          ),
-          child: emoji != null
-              ? Text(emoji!, style: TextStyle(fontSize: size * .5))
-              : Icon(category.icon, color: color, size: size * .52),
+        IconTile(
+          icon: HzIcons.category(category),
+          color: declined ? hz.inkSubtle : hz.category(category),
+          size: size,
         ),
         if (declined)
           Positioned(
-            right: -3,
-            bottom: -3,
+            right: -4,
+            bottom: -4,
             child: Container(
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                color: hz.surfaceRaised,
                 shape: BoxShape.circle,
               ),
-              padding: const EdgeInsets.all(1),
-              child: const Icon(Icons.block, size: 16, color: Brand.danger),
+              child: Icon(HzIcons.declined, size: 15, color: hz.negative),
             ),
           ),
       ],
@@ -131,37 +142,36 @@ class MerchantAvatar extends StatelessWidget {
   }
 }
 
+/// Initials on a tinted circle, for people and payees.
 class InitialsAvatar extends StatelessWidget {
-  const InitialsAvatar(this.name, {super.key, this.size = 44});
+  const InitialsAvatar(this.name, {super.key, this.size = HzSize.avatar});
 
   final String name;
   final double size;
 
   @override
   Widget build(BuildContext context) {
+    final hz = context.hz;
     final parts = name.trim().split(RegExp(r'\s+'));
     final initials = parts
         .take(2)
         .map((p) => p.isEmpty ? '' : p[0])
         .join()
         .toUpperCase();
-    final hue = (name.codeUnits.fold(0, (a, b) => a + b) * 37) % 360;
-    final color = HSLColor.fromAHSL(1, hue.toDouble(), .55, .55).toColor();
+    final colors = hz.potColors;
+    final color =
+        colors[name.codeUnits.fold(0, (a, b) => a + b) % colors.length];
     return Container(
       width: size,
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .18),
+        color: color.withValues(alpha: .14),
         shape: BoxShape.circle,
       ),
       child: Text(
         initials,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.w800,
-          fontSize: size * .36,
-        ),
+        style: HzType.bodyStrong.copyWith(color: color, fontSize: size * .36),
       ),
     );
   }
@@ -182,6 +192,7 @@ String txSubtitle(BankTransaction t) {
   };
 }
 
+/// One payment in a list: avatar, title, subtitle, amount.
 class TransactionTile extends StatelessWidget {
   const TransactionTile({
     super.key,
@@ -199,29 +210,23 @@ class TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = transaction;
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final amountStyle = theme.textTheme.titleMedium?.copyWith(
-      fontFeatures: const [FontFeature.tabularFigures()],
-      color: t.isDeclined
-          ? scheme.onSurfaceVariant
-          : t.isIncoming
-          ? Brand.mint
-          : scheme.onSurface,
-      decoration: t.isDeclined ? TextDecoration.lineThrough : null,
-    );
+    final hz = context.hz;
+    final subtitleColor = t.isDeclined
+        ? hz.negative
+        : t.status == TxStatus.pending
+        ? hz.info
+        : hz.inkMuted;
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: HzSpace.s5,
+          vertical: HzSpace.s3 - 2,
+        ),
         child: Row(
           children: [
-            MerchantAvatar(
-              emoji: t.emoji,
-              category: t.category,
-              declined: t.isDeclined,
-            ),
-            const SizedBox(width: 14),
+            MerchantAvatar(category: t.category, declined: t.isDeclined),
+            const SizedBox(width: HzSpace.s3 + 2),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,23 +235,19 @@ class TransactionTile extends StatelessWidget {
                     t.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 15),
+                    style: HzType.bodyStrong.copyWith(color: hz.ink),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     txSubtitle(t),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: t.isDeclined
-                          ? Brand.danger
-                          : scheme.onSurfaceVariant,
-                    ),
+                    style: HzType.caption.copyWith(color: subtitleColor),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: HzSpace.s2),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -254,15 +255,31 @@ class TransactionTile extends StatelessWidget {
                   t.isIncoming
                       ? formatMoney(t.amountCents, showPlus: true)
                       : formatMoney(t.amountCents.abs()),
-                  style: amountStyle,
+                  style: HzType.amountRow.copyWith(
+                    color: t.isDeclined
+                        ? hz.inkSubtle
+                        : t.isIncoming
+                        ? hz.positive
+                        : hz.ink,
+                    decoration: t.isDeclined
+                        ? TextDecoration.lineThrough
+                        : null,
+                  ),
                 ),
                 if (roundUpCents != null)
-                  Text(
-                    '🪙 ${roundUpCents}p',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(HzIcons.coins, size: 12, color: hz.catSavings),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${roundUpCents}p',
+                        style: HzType.caption.copyWith(
+                          fontSize: 12,
+                          color: hz.inkMuted,
+                        ),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -284,8 +301,8 @@ String dayLabel(DateTime date, DateTime now) {
   return DateFormat('EEEE d MMMM y').format(d);
 }
 
-/// Feed grouped by day with each day's spending total, like a bank statement
-/// you can scroll.
+/// Feed grouped by day with each day's spending total. Each day is one
+/// panel, like a page of a statement.
 class TransactionFeed extends StatelessWidget {
   const TransactionFeed({
     super.key,
@@ -304,28 +321,25 @@ class TransactionFeed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hz = context.hz;
     final groups = <String, List<BankTransaction>>{};
     for (final t in transactions) {
       groups.putIfAbsent(dayLabel(t.date, now), () => []).add(t);
     }
-    final theme = Theme.of(context);
+    final overline = HzType.overline.copyWith(color: hz.inkSubtle);
     return Column(
       children: [
         for (final entry in groups.entries) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+            padding: const EdgeInsets.fromLTRB(
+              HzSpace.s5,
+              HzSpace.s5,
+              HzSpace.s5,
+              HzSpace.s2,
+            ),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(
-                    entry.key.toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      letterSpacing: 1,
-                      fontWeight: FontWeight.w800,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
+                Expanded(child: Text(entry.key.toUpperCase(), style: overline)),
                 Builder(
                   builder: (context) {
                     final spent = entry.value
@@ -333,24 +347,27 @@ class TransactionFeed extends StatelessWidget {
                         .fold(0, (s, t) => s - t.amountCents);
                     return spent == 0
                         ? const SizedBox.shrink()
-                        : Text(
-                            formatMoney(spent),
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          );
+                        : Text(formatMoney(spent), style: overline);
                   },
                 ),
               ],
             ),
           ),
-          for (final t in entry.value)
-            TransactionTile(
-              transaction: t,
-              onTap: () => onTap(t),
-              roundUpCents: roundUpFor?.call(t)?.amountCents.abs(),
+          Panel(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: HzSpace.s1),
+              child: Column(
+                children: [
+                  for (final t in entry.value)
+                    TransactionTile(
+                      transaction: t,
+                      onTap: () => onTap(t),
+                      roundUpCents: roundUpFor?.call(t)?.amountCents.abs(),
+                    ),
+                ],
+              ),
             ),
+          ),
         ],
       ],
     );
@@ -366,11 +383,16 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: padding ?? const EdgeInsets.fromLTRB(20, 24, 12, 8),
+    padding:
+        padding ??
+        const EdgeInsets.fromLTRB(HzSpace.s5, HzSpace.s6, HzSpace.s3, 6),
     child: Row(
       children: [
         Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+          child: Text(
+            title,
+            style: HzType.title3.copyWith(color: context.hz.ink),
+          ),
         ),
         ?action,
       ],
@@ -378,7 +400,8 @@ class SectionHeader extends StatelessWidget {
   );
 }
 
-/// A rounded white panel used to group related rows.
+/// The raised surface that groups related rows (`surface-raised`,
+/// `radius-lg`, flat: no border, no shadow).
 class Panel extends StatelessWidget {
   const Panel({super.key, required this.child, this.padding, this.margin});
 
@@ -388,14 +411,25 @@ class Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: margin ?? const EdgeInsets.symmetric(horizontal: 16),
+    padding: margin ?? const EdgeInsets.symmetric(horizontal: HzSpace.s4),
     child: Material(
-      color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(20),
+      color: context.hz.surfaceRaised,
+      borderRadius: BorderRadius.circular(HzRadius.lg),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: padding ?? EdgeInsets.zero, child: child),
     ),
   );
+}
+
+/// Thin divider between rows inside a [Panel], inset to the text column.
+class RowDivider extends StatelessWidget {
+  const RowDivider({super.key, this.indent = 76});
+
+  final double indent;
+
+  @override
+  Widget build(BuildContext context) =>
+      Divider(height: 1, indent: indent, endIndent: HzSpace.s5);
 }
 
 /// Round quick-action button with a label underneath.
@@ -411,34 +445,35 @@ class QuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+
+  /// "On" state, e.g. Freeze while the card is frozen (`frost`).
   final bool highlighted;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final hz = context.hz;
     return Semantics(
       button: true,
       label: label,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(HzRadius.md),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: HzSize.quickAction,
+                height: HzSize.quickAction,
                 decoration: BoxDecoration(
-                  color: highlighted
-                      ? Brand.frost
-                      : scheme.surfaceContainerLowest,
+                  color: highlighted ? hz.frost : hz.surfaceRaised,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
-                  color: highlighted ? Brand.ink : scheme.primary,
+                  size: 22,
+                  color: highlighted ? hz.onFrost : hz.brand,
                 ),
               ),
               const SizedBox(height: 6),
@@ -446,8 +481,7 @@ class QuickAction extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: HzType.caption.copyWith(color: hz.ink),
               ),
             ],
           ),
@@ -457,107 +491,119 @@ class QuickAction extends StatelessWidget {
   }
 }
 
-/// The payment card, front side. Shows full details when [revealed].
+enum StatusTone { positive, pending, negative, warning, neutral }
+
+/// Small pill that names a state in words (never colour alone).
+class StatusPill extends StatelessWidget {
+  const StatusPill(this.label, {super.key, required this.tone, this.icon});
+
+  final String label;
+  final StatusTone tone;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final hz = context.hz;
+    final (bg, fg) = switch (tone) {
+      StatusTone.positive => (hz.positiveTint, hz.positive),
+      StatusTone.pending => (hz.infoTint, hz.info),
+      StatusTone.negative => (hz.negativeTint, hz.negative),
+      StatusTone.warning => (hz.sunTint, hz.warning),
+      StatusTone.neutral => (hz.surfaceSunken, hz.inkMuted),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(HzRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: fg),
+            const SizedBox(width: HzSpace.s1),
+          ],
+          Text(label, style: HzType.caption.copyWith(color: fg)),
+        ],
+      ),
+    );
+  }
+}
+
+/// The debit card face: Horizon Green gradient, the rising sun on the
+/// horizon line from the logo, chip, number, holder.
 class CardVisual extends StatelessWidget {
   const CardVisual({
     super.key,
     required this.card,
     required this.holder,
     this.revealed = false,
-    this.width,
   });
 
   final BankCard card;
   final String holder;
   final bool revealed;
-  final double? width;
 
   @override
   Widget build(BuildContext context) {
+    final hz = context.hz;
     const white = Colors.white;
-    final mono = TextStyle(
+    final number = HzType.amountRow.copyWith(
       color: white,
-      fontWeight: FontWeight.w700,
       fontSize: 17,
       letterSpacing: 2,
-      fontFeatures: const [FontFeature.tabularFigures()],
     );
     return AspectRatio(
       aspectRatio: 1.586,
       child: Container(
-        width: width,
         decoration: BoxDecoration(
-          gradient: Brand.cardGradient,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Brand.blue.withValues(alpha: .3),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [hz.cardFrom, hz.cardTo],
+          ),
+          borderRadius: BorderRadius.circular(HzRadius.card),
+          boxShadow: hz.shadowCard,
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
-            // Rising sun motif.
-            Positioned(
-              right: -40,
-              bottom: -70,
-              child: Container(
-                width: 210,
-                height: 210,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      Brand.sunrise.withValues(alpha: .95),
-                      Brand.sunrise.withValues(alpha: .0),
-                    ],
-                  ),
-                ),
-              ),
+            Positioned.fill(
+              child: CustomPaint(painter: _CardSunPainter(hz.sun)),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(HzSpace.s5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Text(
-                        'horizon',
-                        style: TextStyle(
-                          color: white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                          letterSpacing: -.5,
-                        ),
-                      ),
+                      const HorizonLogo(height: 26, reversed: true),
                       const Spacer(),
                       Icon(
-                        Icons.contactless_outlined,
+                        HzIcons.contactless,
                         color: white.withValues(alpha: .9),
                       ),
                     ],
                   ),
                   const Spacer(),
                   Container(
-                    width: 38,
-                    height: 28,
+                    width: 40,
+                    height: 30,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFE9D7A8), Color(0xFFC9A85A)],
+                      gradient: LinearGradient(
+                        colors: [hz.cardChipFrom, hz.cardChipTo],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: HzSpace.s3),
                   Text(
                     revealed ? card.groupedNumber : '••••  ${card.last4}',
-                    style: mono,
+                    style: number,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Expanded(
@@ -565,9 +611,8 @@ class CardVisual extends StatelessWidget {
                           holder.toUpperCase(),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: HzType.caption.copyWith(
                             color: white.withValues(alpha: .9),
-                            fontWeight: FontWeight.w700,
                             fontSize: 12,
                             letterSpacing: 1.2,
                           ),
@@ -578,13 +623,11 @@ class CardVisual extends StatelessWidget {
                         const SizedBox(width: 14),
                         _label('CVV', card.cvv),
                       ] else
-                        const Text(
+                        Text(
                           'DEBIT',
-                          style: TextStyle(
+                          style: HzType.overline.copyWith(
                             color: white,
-                            fontWeight: FontWeight.w800,
                             fontSize: 12,
-                            letterSpacing: 1.5,
                           ),
                         ),
                     ],
@@ -595,20 +638,16 @@ class CardVisual extends StatelessWidget {
             if (card.frozen)
               Positioned.fill(
                 child: Container(
-                  color: Brand.frost.withValues(alpha: .72),
+                  color: hz.frost.withValues(alpha: .86),
                   alignment: Alignment.center,
-                  child: const Column(
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.ac_unit_rounded, color: Brand.ink, size: 40),
-                      SizedBox(height: 6),
+                      Icon(HzIcons.freeze, color: hz.onFrost, size: 36),
+                      const SizedBox(height: 6),
                       Text(
                         'Card frozen',
-                        style: TextStyle(
-                          color: Brand.ink,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                        ),
+                        style: HzType.title3.copyWith(color: hz.onFrost),
                       ),
                     ],
                   ),
@@ -625,22 +664,52 @@ class CardVisual extends StatelessWidget {
     children: [
       Text(
         label,
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
-        ),
+        style: HzType.overline.copyWith(color: Colors.white70, fontSize: 9),
       ),
       Text(
         value,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-          fontSize: 13,
-        ),
+        style: HzType.amountRow.copyWith(color: Colors.white, fontSize: 13),
       ),
     ],
   );
+}
+
+/// The logo's sun and horizon line, large and low on the card's right.
+class _CardSunPainter extends CustomPainter {
+  _CardSunPainter(this.sun);
+
+  final Color sun;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = size.height * .26;
+    final cx = size.width * .80;
+    final horizon = size.height * .52;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, horizon), radius: r),
+      3.14159,
+      3.14159,
+      true,
+      Paint()..color = sun,
+    );
+    final line = Paint()..color = Colors.white.withValues(alpha: .28);
+    final h = size.height * .028;
+    for (final (w, dy) in [(.44, 1.4), (.26, 3.2), (.12, 4.9)]) {
+      canvas.drawRRect(
+        RRect.fromLTRBR(
+          cx - size.width * w / 2,
+          horizon + h * dy,
+          cx + size.width * w / 2,
+          horizon + h * (dy + 1),
+          Radius.circular(h / 2),
+        ),
+        line,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CardSunPainter old) => old.sun != sun;
 }
 
 void showSnack(BuildContext context, String message) {
@@ -658,13 +727,16 @@ Future<void> copyToClipboard(
   if (context.mounted) showSnack(context, '$label copied');
 }
 
+enum BannerTone { info, positive, negative, celebrate }
+
 /// An in-app notification that slides down from the top, like a push
 /// notification. Works the same on every platform.
 void showBanner(
   BuildContext context, {
   required String title,
   required String body,
-  String emoji = '🔔',
+  IconData icon = HzIcons.bell,
+  BannerTone tone = BannerTone.info,
 }) {
   final overlay = Overlay.of(context, rootOverlay: true);
   late OverlayEntry entry;
@@ -676,8 +748,13 @@ void showBanner(
   }
 
   entry = OverlayEntry(
-    builder: (context) =>
-        _Banner(title: title, body: body, emoji: emoji, onDismiss: remove),
+    builder: (context) => _Banner(
+      title: title,
+      body: body,
+      icon: icon,
+      tone: tone,
+      onDismiss: remove,
+    ),
   );
   overlay.insert(entry);
 }
@@ -686,13 +763,15 @@ class _Banner extends StatefulWidget {
   const _Banner({
     required this.title,
     required this.body,
-    required this.emoji,
+    required this.icon,
+    required this.tone,
     required this.onDismiss,
   });
 
   final String title;
   final String body;
-  final String emoji;
+  final IconData icon;
+  final BannerTone tone;
   final VoidCallback onDismiss;
 
   @override
@@ -728,7 +807,13 @@ class _BannerState extends State<_Banner> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final hz = context.hz;
+    final color = switch (widget.tone) {
+      BannerTone.info => hz.brand,
+      BannerTone.positive => hz.positive,
+      BannerTone.negative => hz.negative,
+      BannerTone.celebrate => hz.catSavings,
+    };
     return Positioned(
       top: 0,
       left: 0,
@@ -743,40 +828,45 @@ class _BannerState extends State<_Banner> with SingleTickerProviderStateMixin {
                 end: Offset.zero,
               ).animate(CurvedAnimation(parent: _c, curve: Curves.easeOutBack)),
               child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Material(
-                  elevation: 8,
-                  shadowColor: Colors.black26,
-                  color: scheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(18),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(18),
-                    onTap: _close,
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        children: [
-                          Text(
-                            widget.emoji,
-                            style: const TextStyle(fontSize: 26),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.title,
-                                  style: Theme.of(context).textTheme.titleSmall,
-                                ),
-                                Text(
-                                  widget.body,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
+                padding: const EdgeInsets.all(HzSpace.s3),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: hz.surfaceRaised,
+                    borderRadius: BorderRadius.circular(HzRadius.lg),
+                    boxShadow: hz.shadowRaised,
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(HzRadius.lg),
+                      onTap: _close,
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
+                          children: [
+                            IconTile(icon: widget.icon, color: color, size: 40),
+                            const SizedBox(width: HzSpace.s3),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.title,
+                                    style: HzType.bodyStrong.copyWith(
+                                      color: hz.ink,
+                                    ),
+                                  ),
+                                  Text(
+                                    widget.body,
+                                    style: HzType.caption.copyWith(
+                                      color: hz.inkMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -798,6 +888,7 @@ Future<bool> confirm(
   required String action,
   bool destructive = false,
 }) async {
+  final hz = context.hz;
   final result = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
@@ -809,12 +900,11 @@ Future<bool> confirm(
           child: const Text('Cancel'),
         ),
         FilledButton(
-          style: destructive
-              ? FilledButton.styleFrom(
-                  backgroundColor: Brand.danger,
-                  minimumSize: const Size(0, 44),
-                )
-              : FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(0, 44),
+            backgroundColor: destructive ? hz.negative : hz.brand,
+            foregroundColor: destructive ? hz.surfaceRaised : hz.onBrand,
+          ),
           onPressed: () => Navigator.pop(context, true),
           child: Text(action),
         ),

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../utils/money.dart';
 import '../widgets/common.dart';
-import '../widgets/theme.dart';
 import 'home_shell.dart';
 
 class TransactionScreen extends StatelessWidget {
@@ -42,7 +42,6 @@ class TransactionScreen extends StatelessWidget {
               children: [
                 Center(
                   child: MerchantAvatar(
-                    emoji: t.emoji,
                     category: t.category,
                     size: 76,
                     declined: t.isDeclined,
@@ -62,7 +61,7 @@ class TransactionScreen extends StatelessWidget {
                   key: const Key('txAmount'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.displaySmall?.copyWith(
-                    color: t.isIncoming ? Brand.mint : null,
+                    color: t.isIncoming ? context.hz.positive : null,
                     decoration: t.isDeclined
                         ? TextDecoration.lineThrough
                         : null,
@@ -88,25 +87,28 @@ class TransactionScreen extends StatelessWidget {
                     children: [
                       ListTile(
                         key: const Key('categoryRow'),
-                        leading: Icon(t.category.icon, color: t.category.color),
+                        leading: Icon(
+                          HzIcons.category(t.category),
+                          color: context.hz.category(t.category),
+                        ),
                         title: const Text('Category'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               t.category.label,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
+                              style: HzType.bodyStrong.copyWith(
+                                color: context.hz.ink,
                               ),
                             ),
-                            const Icon(Icons.chevron_right_rounded),
+                            Icon(HzIcons.chevron, color: context.hz.inkSubtle),
                           ],
                         ),
                         onTap: () => _pickCategory(context, t),
                       ),
                       const Divider(indent: 20, endIndent: 20),
                       ListTile(
-                        leading: const Icon(Icons.edit_note_rounded),
+                        leading: const Icon(HzIcons.note),
                         title: Text(t.note ?? 'Add a note'),
                         textColor: t.note == null
                             ? theme.colorScheme.primary
@@ -116,9 +118,9 @@ class TransactionScreen extends StatelessWidget {
                       if (roundUp != null) ...[
                         const Divider(indent: 20, endIndent: 20),
                         ListTile(
-                          leading: const Text(
-                            '🪙',
-                            style: TextStyle(fontSize: 22),
+                          leading: Icon(
+                            HzIcons.coins,
+                            color: context.hz.catSavings,
                           ),
                           title: Text(
                             '${formatMoney(-roundUp.amountCents)} rounded up',
@@ -132,14 +134,14 @@ class TransactionScreen extends StatelessWidget {
                         const Divider(indent: 20, endIndent: 20),
                         ListTile(
                           key: const Key('splitBill'),
-                          leading: const Icon(Icons.call_split_rounded),
+                          leading: const Icon(HzIcons.split),
                           title: Text(
                             t.splitRequestIds.isEmpty
                                 ? 'Split the bill'
                                 : 'Split with ${t.splitRequestIds.length} '
                                       '${t.splitRequestIds.length == 1 ? 'person' : 'people'}',
                           ),
-                          trailing: const Icon(Icons.chevron_right_rounded),
+                          trailing: const Icon(HzIcons.chevron),
                           onTap: () => showModalBottomSheet<void>(
                             context: context,
                             isScrollControlled: true,
@@ -175,7 +177,7 @@ class TransactionScreen extends StatelessWidget {
                   const SectionHeader('History'),
                   Panel(
                     child: ListTile(
-                      leading: const Icon(Icons.history_rounded),
+                      leading: const Icon(HzIcons.history),
                       title: Text(
                         '${atMerchant.length} payments with ${t.title}',
                       ),
@@ -190,7 +192,7 @@ class TransactionScreen extends StatelessWidget {
                 const SectionHeader('Help'),
                 Panel(
                   child: ListTile(
-                    leading: const Icon(Icons.support_agent_rounded),
+                    leading: const Icon(HzIcons.help),
                     title: Text(
                       t.disputed
                           ? 'We’re looking into this payment'
@@ -262,7 +264,11 @@ class TransactionScreen extends StatelessWidget {
                 children: [
                   for (final c in TxCategory.values)
                     ChoiceChip(
-                      avatar: Icon(c.icon, color: c.color, size: 18),
+                      avatar: Icon(
+                        HzIcons.category(c),
+                        color: sheet.hz.category(c),
+                        size: 18,
+                      ),
                       label: Text(c.label),
                       selected: c == t.category,
                       onSelected: (_) {
@@ -315,26 +321,29 @@ class _StatusChip extends StatelessWidget {
   final BankTransaction t;
 
   @override
-  Widget build(BuildContext context) {
-    final (label, color) = t.isDeclined
-        ? ('Declined', Brand.danger)
-        : t.disputed
-        ? ('Disputed', Brand.sunrise)
-        : t.status == TxStatus.pending
-        ? ('Pending', Brand.blue)
-        : ('Completed', Brand.mint);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .14),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(color: color, fontWeight: FontWeight.w800),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => t.isDeclined
+      ? const StatusPill(
+          'Declined',
+          tone: StatusTone.negative,
+          icon: HzIcons.declined,
+        )
+      : t.disputed
+      ? const StatusPill(
+          'Disputed',
+          tone: StatusTone.warning,
+          icon: HzIcons.warning,
+        )
+      : t.status == TxStatus.pending
+      ? const StatusPill(
+          'Pending',
+          tone: StatusTone.pending,
+          icon: HzIcons.clock,
+        )
+      : const StatusPill(
+          'Completed',
+          tone: StatusTone.positive,
+          icon: HzIcons.success,
+        );
 }
 
 class _DeclinedHelp extends StatelessWidget {
@@ -482,7 +491,7 @@ class _SplitSheetState extends State<_SplitSheet> {
                 ),
               for (final s in suggestions)
                 ActionChip(
-                  avatar: const Icon(Icons.add, size: 16),
+                  avatar: const Icon(HzIcons.add, size: 16),
                   label: Text(s),
                   onPressed: () => setState(() => _people.add(s)),
                 ),
@@ -495,7 +504,7 @@ class _SplitSheetState extends State<_SplitSheet> {
             decoration: InputDecoration(
               labelText: 'Add someone',
               suffixIcon: IconButton(
-                icon: const Icon(Icons.add_circle_rounded),
+                icon: const Icon(HzIcons.add),
                 onPressed: _add,
               ),
             ),

@@ -198,7 +198,7 @@ void main() {
       final total = bank.account.balanceCents + bank.potsTotalCents;
       final pot = await bank.createPot(
         name: 'Car',
-        emoji: '🚗',
+        icon: 'car',
         colorValue: 0xFF00FF00,
         goalCents: 50000,
       );

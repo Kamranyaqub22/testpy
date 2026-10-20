@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../widgets/common.dart';
 import '../widgets/keypads.dart';
-import '../widgets/theme.dart';
 
 enum _Step { welcome, name, email, passcode, confirm, cardOrdered }
 
@@ -168,17 +168,17 @@ class _WelcomeState extends State<_Welcome> {
 
   static const _slides = [
     (
-      emoji: '🌅',
+      icon: HzIcons.sparkle,
       title: 'Banking that\nlooks ahead',
       body: 'See every payment the moment it happens, with spending sorted for you.',
     ),
     (
-      emoji: '🏝️',
+      icon: HzIcons.pots,
       title: 'Save in Pots',
       body: 'Set money aside for the things you care about. Round up your spare change automatically.',
     ),
     (
-      emoji: '🛡️',
+      icon: HzIcons.shield,
       title: 'You’re in control',
       body: 'Freeze your card in a tap, block gambling, and check who you’re paying before you send.',
     ),
@@ -201,12 +201,7 @@ class _WelcomeState extends State<_Welcome> {
           children: [
             Row(
               children: [
-                Text(
-                  'horizon',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
+                const HorizonLogo(height: 34),
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -214,16 +209,12 @@ class _WelcomeState extends State<_Welcome> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Brand.sunrise.withValues(alpha: .25),
-                    borderRadius: BorderRadius.circular(20),
+                    color: context.hz.sunTint,
+                    borderRadius: BorderRadius.circular(HzRadius.pill),
                   ),
-                  child: const Text(
+                  child: Text(
                     'DEMO',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1,
-                      fontSize: 12,
-                    ),
+                    style: HzType.overline.copyWith(color: context.hz.onSun),
                   ),
                 ),
               ],
@@ -239,19 +230,25 @@ class _WelcomeState extends State<_Welcome> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 112,
-                        height: 112,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: Text(
-                          s.emoji,
-                          style: const TextStyle(fontSize: 56),
-                        ),
-                      ),
+                      i == 0
+                          ? Container(
+                              width: 112,
+                              height: 112,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: context.hz.brandDeep,
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                              child: const HorizonMark(
+                                size: 84,
+                                reversed: true,
+                              ),
+                            )
+                          : IconTile(
+                              icon: s.icon,
+                              color: context.hz.brand,
+                              size: 112,
+                            ),
                       const SizedBox(height: 32),
                       Text(s.title, style: theme.textTheme.displaySmall),
                       const SizedBox(height: 16),
@@ -291,7 +288,7 @@ class _WelcomeState extends State<_Welcome> {
               padding: const EdgeInsets.all(14),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline),
+                  const Icon(HzIcons.info),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

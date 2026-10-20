@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../utils/money.dart';
 import '../widgets/common.dart';
 import '../widgets/keypads.dart';
-import '../widgets/theme.dart';
 import 'passcode_sheet.dart';
 import 'standing_order_screen.dart';
 
@@ -48,7 +49,7 @@ class _ChoosePayeeScreenState extends State<ChoosePayeeScreen> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: TextField(
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search_rounded),
+                  prefixIcon: Icon(HzIcons.search),
                   hintText: 'Search payees',
                 ),
                 onChanged: (v) => setState(() => _query = v.trim()),
@@ -61,16 +62,13 @@ class _ChoosePayeeScreenState extends State<ChoosePayeeScreen> {
                   backgroundColor: Theme.of(context).colorScheme.primary
                       .withValues(alpha: .14),
                   child: Icon(
-                    Icons.person_add_alt_1_rounded,
+                    HzIcons.addPerson,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                title: const Text(
-                  'New payee',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
+                title: const Text('New payee'),
                 subtitle: const Text('Pay with a sort code and account number'),
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(HzIcons.chevron),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const NewPayeeScreen()),
@@ -90,12 +88,9 @@ class _ChoosePayeeScreenState extends State<ChoosePayeeScreen> {
                     for (final p in payees)
                       ListTile(
                         leading: InitialsAvatar(p.name, size: 40),
-                        title: Text(
-                          p.name,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
+                        title: Text(p.name),
                         subtitle: Text(p.maskedDetails),
-                        trailing: const Icon(Icons.chevron_right_rounded),
+                        trailing: const Icon(HzIcons.chevron),
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -269,28 +264,28 @@ class _CopSheet extends StatelessWidget {
     final registered = result.registeredName ?? typedName;
     final (icon, color, title, body) = switch (result.outcome) {
       CopOutcome.match => (
-        Icons.verified_rounded,
-        Brand.mint,
+        HzIcons.verified,
+        context.hz.positive,
         'Name matches',
         'The account is held by $registered.',
       ),
       CopOutcome.closeMatch => (
-        Icons.help_rounded,
-        Brand.sunrise,
+        HzIcons.question,
+        context.hz.warning,
         'Did you mean $registered?',
         'The name you entered is close to the name on the account. '
             'Check it with the person you’re paying.',
       ),
       CopOutcome.noMatch => (
-        Icons.gpp_maybe_rounded,
-        Brand.danger,
+        HzIcons.report,
+        context.hz.negative,
         'The name doesn’t match',
         'This account isn’t held by $typedName. If you continue, your money '
             'could go to the wrong person and you may not get it back.',
       ),
       CopOutcome.unavailable => (
-        Icons.info_rounded,
-        Brand.blue,
+        HzIcons.info,
+        context.hz.info,
         'We couldn’t check this name',
         'Their bank doesn’t support name checks. Make sure the details are '
             'right before you pay.',
@@ -346,7 +341,7 @@ class _CopSheet extends StatelessWidget {
                 key: const Key('copContinueAnyway'),
                 style: TextButton.styleFrom(
                   foregroundColor: result.outcome == CopOutcome.noMatch
-                      ? Brand.danger
+                      ? context.hz.negative
                       : null,
                 ),
                 onPressed: () => Navigator.pop(context, typedName),
@@ -527,7 +522,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
               style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
-          Text(v, style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(v),
         ],
       ),
     );
@@ -583,7 +578,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextButton.icon(
-                icon: const Icon(Icons.repeat_rounded),
+                icon: const Icon(HzIcons.repeat),
                 label: const Text('Make this a regular payment instead'),
                 onPressed: () => Navigator.push(
                   context,
@@ -623,10 +618,10 @@ class ScamCheckScreen extends StatefulWidget {
 
 class _ScamCheckScreenState extends State<ScamCheckScreen> {
   static const _reasons = [
-    ('friends', '👋', 'Paying friends or family', null),
+    ('friends', LucideIcons.users, 'Paying friends or family', null),
     (
       'bill',
-      '🧾',
+      LucideIcons.receiptText,
       'Paying a bill or invoice',
       'Invoice scams are common. If '
           'bank details came by email or changed recently, call the company on '
@@ -634,7 +629,7 @@ class _ScamCheckScreenState extends State<ScamCheckScreen> {
     ),
     (
       'buying',
-      '🛍️',
+      LucideIcons.shoppingBag,
       'Buying something',
       'If you haven’t seen the item in '
           'person, a bank transfer gives you less protection than a card. '
@@ -642,7 +637,7 @@ class _ScamCheckScreenState extends State<ScamCheckScreen> {
     ),
     (
       'investment',
-      '📈',
+      LucideIcons.trendingUp,
       'Making an investment',
       'Investment scams promise '
           'high, guaranteed returns. Check the firm is registered with the '
@@ -650,7 +645,7 @@ class _ScamCheckScreenState extends State<ScamCheckScreen> {
     ),
     (
       'safe',
-      '🚨',
+      LucideIcons.siren,
       'Someone told me to move my money',
       'Stop. Banks and the '
           'police will never ask you to move money to a “safe account”. This is '
@@ -702,7 +697,9 @@ class _ScamCheckScreenState extends State<ScamCheckScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          title: Text('${r.$2}  ${r.$3}'),
+                          secondary: Icon(r.$2, color: context.hz.inkMuted),
+                          controlAffinity: ListTileControlAffinity.trailing,
+                          title: Text(r.$3),
                         ),
                       ),
                     ),
@@ -714,17 +711,17 @@ class _ScamCheckScreenState extends State<ScamCheckScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: (blocked ? Brand.danger : Brand.sunrise).withValues(
-                    alpha: .14,
-                  ),
+                  color: (blocked
+                      ? context.hz.negativeTint
+                      : context.hz.sunTint),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.warning_amber_rounded,
-                      color: blocked ? Brand.danger : const Color(0xFFB27300),
+                      HzIcons.warning,
+                      color: blocked ? context.hz.negative : context.hz.warning,
                     ),
                     const SizedBox(width: 12),
                     Expanded(child: Text(warning)),
@@ -735,7 +732,9 @@ class _ScamCheckScreenState extends State<ScamCheckScreen> {
             const SizedBox(height: 20),
             if (blocked)
               FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: Brand.danger),
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.hz.negative,
+                ),
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('Cancel this payment'),
               )
@@ -761,12 +760,12 @@ class PaymentSuccessScreen extends StatelessWidget {
     super.key,
     required this.title,
     required this.body,
-    this.emoji,
+    this.icon = HzIcons.success,
   });
 
   final String title;
   final String body;
-  final String? emoji;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -791,18 +790,12 @@ class PaymentSuccessScreen extends StatelessWidget {
                     child: Container(
                       width: 104,
                       height: 104,
-                      decoration: const BoxDecoration(
-                        color: Brand.mint,
+                      decoration: BoxDecoration(
+                        color: context.hz.brand,
                         shape: BoxShape.circle,
                       ),
                       alignment: Alignment.center,
-                      child: emoji == null
-                          ? const Icon(
-                              Icons.check_rounded,
-                              color: Colors.white,
-                              size: 60,
-                            )
-                          : Text(emoji!, style: const TextStyle(fontSize: 50)),
+                      child: Icon(icon, color: context.hz.onBrand, size: 52),
                     ),
                   ),
                 ),

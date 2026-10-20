@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../state/bank_controller.dart';
 import '../widgets/common.dart';
 import '../widgets/keypads.dart';
@@ -20,6 +21,8 @@ class LockScreen extends StatelessWidget {
               maxWidth: 400,
               child: Column(
                 children: [
+                  const HorizonLogo(height: 30),
+                  const SizedBox(height: HzSpace.s8),
                   InitialsAvatar(bank.profile.name, size: 64),
                   const SizedBox(height: 16),
                   PasscodeEntry(

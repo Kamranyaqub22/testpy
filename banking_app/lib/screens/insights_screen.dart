@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../utils/money.dart';
 import '../widgets/common.dart';
-import '../widgets/theme.dart';
 import 'search_screen.dart';
 
 /// Monthly spending by category against budgets.
@@ -64,7 +64,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     onPressed: canGoBack
                         ? () => setState(() => _monthsBack++)
                         : null,
-                    icon: const Icon(Icons.chevron_left_rounded),
+                    icon: const Icon(HzIcons.chevronLeft),
                   ),
                   Text(
                     DateFormat('MMM y').format(month),
@@ -75,7 +75,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     onPressed: _monthsBack > 0
                         ? () => setState(() => _monthsBack--)
                         : null,
-                    icon: const Icon(Icons.chevron_right_rounded),
+                    icon: const Icon(HzIcons.chevron),
                   ),
                 ],
               ),
@@ -101,6 +101,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               byCat,
                               t,
                               theme.colorScheme.surfaceContainer,
+                              context.hz,
                             ),
                           ),
                         ),
@@ -123,7 +124,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      _Stat('Money in', formatMoney(income), Brand.mint),
+                      _Stat(
+                        'Money in',
+                        formatMoney(income),
+                        context.hz.positive,
+                      ),
                       _Stat(
                         'Left to spend',
                         budget == null
@@ -260,7 +265,7 @@ class _Trend extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: up ? Brand.danger : Brand.mint,
+          color: up ? context.hz.negative : context.hz.positive,
         ),
       ),
     );
@@ -301,10 +306,10 @@ class _BudgetBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final ratio = budget == 0 ? 0.0 : spent / budget;
     final color = ratio >= 1
-        ? Brand.danger
+        ? context.hz.negative
         : ratio >= .8
-        ? Brand.sunrise
-        : Brand.mint;
+        ? context.hz.warning
+        : context.hz.positive;
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,8 +400,8 @@ class _CategoryRow extends StatelessWidget {
                       value: (ratio ?? share).clamp(0, 1).toDouble(),
                       minHeight: 6,
                       color: ratio != null && ratio >= 1
-                          ? Brand.danger
-                          : category.color,
+                          ? context.hz.negative
+                          : context.hz.category(category),
                       backgroundColor: theme.colorScheme.surfaceContainer,
                     ),
                   ),
@@ -414,7 +419,7 @@ class _CategoryRow extends StatelessWidget {
             ),
             IconButton(
               tooltip: 'Set ${category.label} budget',
-              icon: const Icon(Icons.tune_rounded, size: 20),
+              icon: const Icon(HzIcons.tune, size: 20),
               onPressed: onBudget,
             ),
           ],
@@ -425,11 +430,12 @@ class _CategoryRow extends StatelessWidget {
 }
 
 class _DonutPainter extends CustomPainter {
-  _DonutPainter(this.data, this.progress, this.track);
+  _DonutPainter(this.data, this.progress, this.track, this.hz);
 
   final Map<TxCategory, int> data;
   final double progress;
   final Color track;
+  final HzPalette hz;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -453,7 +459,7 @@ class _DonutPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
         ..strokeCap = StrokeCap.butt
-        ..color = e.key.color;
+        ..color = hz.category(e.key);
       canvas.drawArc(
         rect,
         start,

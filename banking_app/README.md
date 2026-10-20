@@ -17,7 +17,37 @@ bar. Tablets, desktop windows and browsers get a side rail and wider layouts.
 |---|---|---|---|
 | <img src="docs/screenshots/payee-check.png" width="190"> | <img src="docs/screenshots/scam-check.png" width="190"> | <img src="docs/screenshots/payment-sent.png" width="190"> | <img src="docs/screenshots/home-dark.png" width="190"> |
 
-<img src="docs/screenshots/desktop-insights.png" width="780" alt="Desktop and web layout">
+<img src="docs/screenshots/desktop-home.png" width="780" alt="Desktop and web layout">
+
+## Design system
+
+Every screen is built on the **Horizon design system**, so people and coding
+agents can extend the app without it drifting off-brand.
+
+- **Brand:** a sunrise over the horizon. The mark, lockups, wordmark and app
+  icon are in `design/assets/Logos/`. Horizon Green (`brand`, `brand-deep`)
+  is the ground, Horizon Sun (`sun`) is the light, and the neutrals are tinted
+  green.
+- **Tokens:** `design/tokens.json` holds 44 colours with light and dark values
+  (every text pair checked at 4.5:1), the Manrope type scale, spacing, radii,
+  shadows and sizes. `python3 tool/gen_tokens.py` turns it into
+  `lib/design/tokens.g.dart` (`context.hz.brand`, `HzType.title1`,
+  `HzSpace.s4`…).
+- **Icons:** one set, Lucide, through named `HzIcons` (78 icons, SVGs in
+  `design/assets/Icons/`). There are no emoji in the interface.
+- **Components:** 16 documented components in `design/components/*.md`
+  (Button, QuickAction, BalanceText, TransactionTile, AmountEntry, IconTile,
+  Panel, StatusPill, Banner, CardVisual, TabBar, PasscodeEntry, TextField…),
+  implemented in `lib/widgets/`.
+- **Brand book:** `design/README.md` covers voice and copy, logo, colour,
+  typography, iconography, layout, shape, motion and accessibility.
+- **Hosted version with live previews:**
+  https://claude.ai/artifact/DeWpmqp8Qjy1aeFtwVnKXh (private until shared).
+- **Agents:** `CLAUDE.md` (and `AGENTS.md`) give coding agents the rules, and
+  `test/design_system_test.dart` fails the build on colour literals, Material
+  icons, emoji or out-of-date generated tokens.
+
+<img src="docs/screenshots/design-system-components.png" width="520" alt="Design system component previews">
 
 ## Journeys
 
@@ -76,7 +106,7 @@ bar. Tablets, desktop windows and browsers get a side rail and wider layouts.
   Payments run automatically when they're due.
 
 **Pots**
-- Create a pot with an emoji, a colour and an optional goal. Add or withdraw
+- Create a pot with an icon, a colour and an optional goal. Add or withdraw
   money with the keypad.
 - You get a "Goal reached 🎉" notification when a pot hits its goal.
 - **Round-ups:** card payments round up to the nearest pound, and the change
@@ -154,6 +184,10 @@ checks, standing orders, bill splitting, pots, card controls and declines,
 round-ups, card replacement, passcode lockout, IBAN check digits, and that
 each statement's closing balance opens the next month.
 
+`test/design_system_test.dart` keeps the code on the design system (no colour
+literals, Material icons or emoji in screens and widgets; generated tokens in
+sync with `design/tokens.json`).
+
 `test/app_flow_test.dart` taps through real journeys at phone size:
 onboarding, unlocking, paying a new payee end to end, freezing the card then a
 declined payment, and creating and funding a pot. It also checks the desktop
@@ -172,9 +206,16 @@ lib/
   state/bank_controller.dart    Every banking rule (ChangeNotifier)
   screens/                      One file per journey (home, pay_flow, pots,
                                 card, insights, profile, onboarding, ...)
-  widgets/                      Theme, keypads, card visual, feed, banners
+  design/                       tokens.g.dart (generated), hz.dart (context.hz,
+                                HzIcons, logo), theme.dart (Material theme)
+  widgets/                      Shared components: feed, panels, card face,
+                                keypads, pills, banners
   utils/money.dart              Pence formatting, exact parsing, round-ups
 assets/fonts/                   Manrope (SIL Open Font License, see OFL.txt)
+assets/brand/                   App icon sources (flutter_launcher_icons)
+design/                         Brand book, tokens.json, component guides,
+                                logos and icons
+tool/gen_tokens.py              tokens.json → lib/design/tokens.g.dart
 ```
 
 Money is always held as whole **pence** (`int`) and parsed from text without

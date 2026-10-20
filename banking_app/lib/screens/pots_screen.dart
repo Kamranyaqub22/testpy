@@ -1,35 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../utils/money.dart';
 import '../widgets/common.dart';
 import '../widgets/keypads.dart';
 import 'transaction_screen.dart';
-
-const _potEmojis = [
-  '🏝️',
-  '☔',
-  '💻',
-  '🏠',
-  '🚗',
-  '🎁',
-  '🎓',
-  '💍',
-  '🐶',
-  '🎸',
-  '✈️',
-  '🍼',
-];
-const _potColors = [
-  0xFF00A3A3,
-  0xFF5B6CFF,
-  0xFFBB6BD9,
-  0xFFF2994A,
-  0xFF2FA36B,
-  0xFFE56FA6,
-];
 
 class PotsScreen extends StatelessWidget {
   const PotsScreen({super.key});
@@ -78,7 +56,7 @@ class PotsScreen extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 44),
                     ),
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(HzIcons.add),
                     label: const Text('New pot'),
                     onPressed: () => Navigator.push(
                       context,
@@ -93,17 +71,19 @@ class PotsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Panel(
               child: ListTile(
-                leading: const Text('🪙', style: TextStyle(fontSize: 26)),
-                title: const Text(
-                  'Round-ups',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                leading: IconTile(
+                  icon: HzIcons.coins,
+                  color: context.hz.catSavings,
+                  size: 40,
+                  circle: true,
                 ),
+                title: const Text('Round-ups'),
                 subtitle: Text(
                   roundUpPot == null
                       ? 'Off. Round card payments up to the nearest pound and save the change.'
                       : 'Spare change goes to ${roundUpPot.name}',
                 ),
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(HzIcons.chevron),
                 onTap: () => _chooseRoundUpPot(context),
               ),
             ),
@@ -147,7 +127,11 @@ class PotsScreen extends StatelessWidget {
               for (final p in bank.pots)
                 RadioListTile<String?>(
                   value: p.id,
-                  title: Text('${p.emoji}  ${p.name}'),
+                  secondary: Icon(
+                    HzIcons.pot(p.icon),
+                    color: Color(p.colorValue),
+                  ),
+                  title: Text(p.name),
                 ),
             ],
           ),
@@ -190,7 +174,7 @@ class _PotCard extends StatelessWidget {
                         backgroundColor: color.withValues(alpha: .15),
                       ),
                     ),
-                    Text(pot.emoji, style: const TextStyle(fontSize: 24)),
+                    Icon(HzIcons.pot(pot.icon), color: color, size: 24),
                   ],
                 ),
               ),
@@ -231,8 +215,8 @@ class CreatePotScreen extends StatefulWidget {
 class _CreatePotScreenState extends State<CreatePotScreen> {
   final _name = TextEditingController();
   final _goal = TextEditingController();
-  String _emoji = _potEmojis.first;
-  int _color = _potColors.first;
+  String _icon = HzIcons.potIcons.keys.first;
+  int? _color;
   String? _error;
 
   @override
@@ -253,8 +237,8 @@ class _CreatePotScreenState extends State<CreatePotScreen> {
     try {
       final pot = await context.read<BankController>().createPot(
         name: _name.text,
-        emoji: _emoji,
-        colorValue: _color,
+        icon: _icon,
+        colorValue: _color ?? context.hz.potColors.first.toARGB32(),
         goalCents: goal,
       );
       if (!mounted) return;
@@ -269,7 +253,7 @@ class _CreatePotScreenState extends State<CreatePotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final color = Color(_color ?? context.hz.potColors.first.toARGB32());
     return Scaffold(
       appBar: AppBar(title: const Text('New pot')),
       body: ResponsiveBody(
@@ -283,10 +267,10 @@ class _CreatePotScreenState extends State<CreatePotScreen> {
                 height: 96,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Color(_color).withValues(alpha: .18),
+                  color: color.withValues(alpha: .14),
                   shape: BoxShape.circle,
                 ),
-                child: Text(_emoji, style: const TextStyle(fontSize: 46)),
+                child: Icon(HzIcons.pot(_icon), color: color, size: 44),
               ),
             ),
             const SizedBox(height: 20),
@@ -295,11 +279,16 @@ class _CreatePotScreenState extends State<CreatePotScreen> {
               spacing: 6,
               runSpacing: 6,
               children: [
-                for (final e in _potEmojis)
+                for (final e in HzIcons.potIcons.entries)
                   ChoiceChip(
-                    label: Text(e, style: const TextStyle(fontSize: 20)),
-                    selected: e == _emoji,
-                    onSelected: (_) => setState(() => _emoji = e),
+                    showCheckmark: false,
+                    label: Icon(
+                      e.value,
+                      size: 20,
+                      color: e.key == _icon ? color : context.hz.inkMuted,
+                    ),
+                    selected: e.key == _icon,
+                    onSelected: (_) => setState(() => _icon = e.key),
                   ),
               ],
             ),
@@ -307,7 +296,7 @@ class _CreatePotScreenState extends State<CreatePotScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (final c in _potColors)
+                for (final c in context.hz.potColors.map((c) => c.toARGB32()))
                   GestureDetector(
                     onTap: () => setState(() => _color = c),
                     child: Container(
@@ -318,8 +307,8 @@ class _CreatePotScreenState extends State<CreatePotScreen> {
                         color: Color(c),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: c == _color
-                              ? theme.colorScheme.onSurface
+                          color: c == color.toARGB32()
+                              ? context.hz.ink
                               : Colors.transparent,
                           width: 3,
                         ),
@@ -439,7 +428,7 @@ class PotDetailScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Text(pot.emoji, style: const TextStyle(fontSize: 56)),
+                    Icon(HzIcons.pot(pot.icon), color: color, size: 52),
                   ],
                 ),
               ),
@@ -457,7 +446,7 @@ class PotDetailScreen extends StatelessWidget {
               Center(
                 child: Text(
                   pot.balanceCents >= pot.goalCents!
-                      ? 'Goal reached! 🎉'
+                      ? 'Goal reached'
                       : '${formatMoney(pot.goalCents! - pot.balanceCents)} to go to reach ${formatMoney(pot.goalCents!, compact: true)}',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -472,7 +461,7 @@ class PotDetailScreen extends StatelessWidget {
                   Expanded(
                     child: FilledButton.icon(
                       key: const Key('addToPot'),
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(HzIcons.add),
                       label: const Text('Add money'),
                       onPressed: () => _move(context, pot, adding: true),
                     ),
@@ -481,7 +470,7 @@ class PotDetailScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       key: const Key('withdrawFromPot'),
-                      icon: const Icon(Icons.remove),
+                      icon: const Icon(HzIcons.remove),
                       label: const Text('Withdraw'),
                       onPressed: pot.balanceCents == 0
                           ? null
@@ -494,11 +483,8 @@ class PotDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Panel(
               child: SwitchListTile(
-                secondary: const Text('🪙', style: TextStyle(fontSize: 24)),
-                title: const Text(
-                  'Save round-ups here',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
+                secondary: Icon(HzIcons.coins, color: context.hz.catSavings),
+                title: const Text('Save round-ups here'),
                 subtitle: const Text(
                   'Card payments are rounded up to the nearest pound.',
                 ),
@@ -527,7 +513,6 @@ class PotDetailScreen extends StatelessWidget {
                       category: t.category,
                       kind: t.kind,
                       date: t.date,
-                      emoji: t.kind == TxKind.roundUp ? '🪙' : t.emoji,
                     ),
                   )
                   .toList(),
@@ -652,7 +637,8 @@ class PotDetailScreen extends StatelessWidget {
           updated.balanceCents - cents! < updated.goalCents!) {
         showBanner(
           context,
-          emoji: '🎉',
+          icon: HzIcons.sparkle,
+          tone: BannerTone.celebrate,
           title: 'You reached your ${pot.name} goal!',
           body: '${formatMoney(updated.balanceCents)} saved. Nice work.',
         );

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../utils/money.dart';
 import '../widgets/common.dart';
 import '../widgets/keypads.dart';
-import '../widgets/theme.dart';
 
 String requestLink(PaymentRequest r) =>
     'https://pay.horizon-demo.example/r/${r.id.split('-').last}';
@@ -120,7 +120,7 @@ class _RequestScreenState extends State<RequestScreen> {
                       maxLength: 60,
                       decoration: const InputDecoration(
                         labelText: 'What’s it for? (optional)',
-                        hintText: 'e.g. Pizza night 🍕',
+                        hintText: 'e.g. Pizza night',
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -156,7 +156,14 @@ class _RequestReady extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            const Center(child: Text('💌', style: TextStyle(fontSize: 64))),
+            Center(
+              child: IconTile(
+                icon: HzIcons.send,
+                color: context.hz.brand,
+                size: 88,
+                circle: true,
+              ),
+            ),
             const SizedBox(height: 16),
             Text(
               'Your request is ready',
@@ -177,7 +184,7 @@ class _RequestReady extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              icon: const Icon(Icons.copy_rounded),
+              icon: const Icon(HzIcons.copy),
               label: const Text('Copy message'),
               onPressed: () => copyToClipboard(context, message, 'Message'),
             ),
@@ -204,7 +211,7 @@ class RequestsListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Requests')),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
+        icon: const Icon(HzIcons.add),
         label: const Text('New request'),
         onPressed: () => Navigator.push(
           context,
@@ -225,19 +232,19 @@ class RequestsListScreen extends StatelessWidget {
                           leading: InitialsAvatar(r.fromName, size: 40),
                           title: Text(
                             '${r.fromName} · ${formatMoney(r.amountCents)}',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                           subtitle: Text(
                             '${r.note ?? 'Request'} · ${DateFormat('d MMM').format(r.createdAt)}',
                           ),
                           trailing: switch (r.status) {
-                            RequestStatus.paid => const _Badge(
+                            RequestStatus.paid => const StatusPill(
                               'Paid',
-                              Brand.mint,
+                              tone: StatusTone.positive,
+                              icon: HzIcons.success,
                             ),
-                            RequestStatus.cancelled => const _Badge(
+                            RequestStatus.cancelled => const StatusPill(
                               'Cancelled',
-                              Colors.grey,
+                              tone: StatusTone.neutral,
                             ),
                             RequestStatus.pending => PopupMenuButton<String>(
                               tooltip: 'Request options',
@@ -247,7 +254,8 @@ class RequestsListScreen extends StatelessWidget {
                                   if (context.mounted) {
                                     showBanner(
                                       context,
-                                      emoji: '💸',
+                                      icon: HzIcons.request,
+                                      tone: BannerTone.positive,
                                       title:
                                           '${r.fromName} paid you ${formatMoney(r.amountCents)}',
                                       body: r.note ?? 'Payment request',
@@ -287,23 +295,4 @@ class RequestsListScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge(this.label, this.color);
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: .14),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      label,
-      style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 12),
-    ),
-  );
 }

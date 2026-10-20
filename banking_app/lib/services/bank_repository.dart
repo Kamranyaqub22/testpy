@@ -18,7 +18,7 @@ abstract class BankRepository {
 /// Stores data on the device. `shared_preferences` works on Android, iOS,
 /// web, Windows, macOS and Linux, so no platform-specific code is needed.
 class LocalBankRepository implements BankRepository {
-  static const _key = 'horizon_bank_v2';
+  static const _key = 'horizon_bank_v3';
 
   @override
   Future<BankData?> load() async {

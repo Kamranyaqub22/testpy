@@ -38,6 +38,7 @@ dependencies:
   shared_preferences: ^2.5.6
   intl: ^0.20.3
   crypto: ^3.0.7
+  lucide_icons_flutter: 3.1.20
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +50,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: 0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -105,3 +107,26 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# App icons for every platform, generated from the Horizon logo with:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: assets/brand/app-icon-1024.png
+  android: true
+  adaptive_icon_background: "#063A2C"
+  adaptive_icon_foreground: assets/brand/app-icon-foreground-1024.png
+  ios: true
+  remove_alpha_ios: true
+  background_color_ios: "#063A2C"
+  web:
+    generate: true
+    image_path: assets/brand/app-icon-maskable-1024.png
+    background_color: "#063A2C"
+    theme_color: "#063A2C"
+  windows:
+    generate: true
+    image_path: assets/brand/app-icon-1024.png
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: assets/brand/app-icon-1024.png

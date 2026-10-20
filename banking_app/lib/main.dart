@@ -7,7 +7,7 @@ import 'screens/onboarding_screen.dart';
 import 'services/bank_repository.dart';
 import 'state/bank_controller.dart';
 import 'state/settings_controller.dart';
-import 'widgets/theme.dart';
+import 'design/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,8 +35,8 @@ class BankingApp extends StatelessWidget {
           title: 'Horizon Bank',
           debugShowCheckedModeBanner: false,
           themeMode: settings.themeMode,
-          theme: buildTheme(Brightness.light),
-          darkTheme: buildTheme(Brightness.dark),
+          theme: buildHorizonTheme(Brightness.light),
+          darkTheme: buildHorizonTheme(Brightness.dark),
           home: const _AuthGate(),
         ),
       ),

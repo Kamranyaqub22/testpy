@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../utils/money.dart';
@@ -53,7 +54,7 @@ class _StandingOrderScreenState extends State<StandingOrderScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => PaymentSuccessScreen(
-          emoji: '🔁',
+          icon: HzIcons.repeat,
           title: 'Standing order set up',
           body:
               '${formatMoney(order.amountCents)} ${order.frequency.label.toLowerCase()} to '
@@ -117,10 +118,10 @@ class _StandingOrderScreenState extends State<StandingOrderScreen> {
               Panel(
                 margin: EdgeInsets.zero,
                 child: ListTile(
-                  leading: const Icon(Icons.event_rounded),
+                  leading: const Icon(HzIcons.calendar),
                   title: const Text('First payment'),
                   subtitle: Text(DateFormat('EEEE d MMMM y').format(_start)),
-                  trailing: const Icon(Icons.edit_calendar_rounded),
+                  trailing: const Icon(HzIcons.calendar),
                   onTap: () async {
                     final picked = await showDatePicker(
                       context: context,
@@ -188,17 +189,10 @@ class ScheduledPaymentsScreen extends StatelessWidget {
               children: [
                 for (final s in items)
                   ListTile(
-                    leading: s.emoji == null
-                        ? InitialsAvatar(s.name, size: 40)
-                        : MerchantAvatar(
-                            emoji: s.emoji,
-                            category: s.category,
-                            size: 40,
-                          ),
-                    title: Text(
-                      s.name,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
+                    leading: s.kind == ScheduleKind.directDebit
+                        ? MerchantAvatar(category: s.category, size: 40)
+                        : InitialsAvatar(s.name, size: 40),
+                    title: Text(s.name),
                     subtitle: Text(
                       '${s.frequency.label} · next ${DateFormat('d MMM').format(s.nextDate)}',
                     ),
@@ -240,7 +234,7 @@ class ScheduledPaymentsScreen extends StatelessWidget {
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
-          icon: const Icon(Icons.add),
+          icon: const Icon(HzIcons.add),
           label: const Text('Standing order'),
           onPressed: () => Navigator.push(
             context,

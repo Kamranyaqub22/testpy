@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../models/models.dart';
 import '../state/bank_controller.dart';
 import '../widgets/common.dart';
@@ -62,7 +63,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
-                        avatar: Icon(c.icon, size: 16, color: c.color),
+                        avatar: Icon(
+                          HzIcons.category(c),
+                          size: 16,
+                          color: context.hz.category(c),
+                        ),
                         label: Text(c.label),
                         selected: _category == c,
                         onSelected: (s) =>

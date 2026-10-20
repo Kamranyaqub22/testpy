@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../state/bank_controller.dart';
 import '../widgets/common.dart';
 
@@ -42,14 +43,14 @@ void showAccountDetails(BuildContext context) {
                 ),
                 trailing: IconButton(
                   tooltip: 'Copy ${r.$1.toLowerCase()}',
-                  icon: const Icon(Icons.copy_rounded),
+                  icon: const Icon(HzIcons.copy),
                   onPressed: () => copyToClipboard(context, r.$2, r.$1),
                 ),
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: FilledButton.icon(
-                icon: const Icon(Icons.ios_share_rounded),
+                icon: const Icon(HzIcons.share),
                 label: const Text('Copy all details'),
                 onPressed: () => copyToClipboard(
                   context,

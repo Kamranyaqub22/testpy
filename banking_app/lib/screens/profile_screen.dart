@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../design/hz.dart';
 import '../services/demo_data.dart';
 import '../state/bank_controller.dart';
 import '../state/settings_controller.dart';
 import '../utils/money.dart';
 import '../widgets/common.dart';
 import '../widgets/keypads.dart';
-import '../widgets/theme.dart';
 import 'account_details_sheet.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -37,8 +37,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       subtitle: subtitle == null ? null : Text(subtitle),
       trailing:
-          trailing ??
-          (onTap == null ? null : const Icon(Icons.chevron_right_rounded)),
+          trailing ?? (onTap == null ? null : const Icon(HzIcons.chevron)),
       onTap: onTap,
     );
 
@@ -69,14 +68,14 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   tile(
-                    Icons.numbers_rounded,
+                    HzIcons.details,
                     'Account details',
                     subtitle:
                         '${bank.account.formattedSortCode} · ${bank.account.accountNumber}',
                     onTap: () => showAccountDetails(context),
                   ),
                   tile(
-                    Icons.description_outlined,
+                    HzIcons.statement,
                     'Statements',
                     subtitle: 'Monthly statements for your current account',
                     onTap: () => Navigator.push(
@@ -94,7 +93,7 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   tile(
-                    Icons.password_rounded,
+                    HzIcons.lock,
                     'Change passcode',
                     onTap: () => Navigator.push(
                       context,
@@ -104,7 +103,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   tile(
-                    Icons.lock_outline_rounded,
+                    HzIcons.lock,
                     'Lock app now',
                     key: const Key('lockApp'),
                     onTap: () {
@@ -121,21 +120,15 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   SwitchListTile(
-                    secondary: const Icon(Icons.visibility_off_outlined),
-                    title: const Text(
-                      'Hide balances',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
+                    secondary: const Icon(HzIcons.hide),
+                    title: const Text('Hide balances'),
                     subtitle: const Text('Useful when using the app in public'),
                     value: bank.hideBalance,
                     onChanged: bank.setHideBalance,
                   ),
                   const ListTile(
-                    leading: Icon(Icons.palette_outlined),
-                    title: Text(
-                      'Appearance',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
+                    leading: Icon(HzIcons.palette),
+                    title: Text('Appearance'),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -174,13 +167,13 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   tile(
-                    Icons.contactless_outlined,
+                    HzIcons.contactless,
                     'Simulate a card payment',
                     key: const Key('simulateCard'),
                     onTap: () => simulate(() => _simulateCard(context)),
                   ),
                   tile(
-                    Icons.casino_outlined,
+                    HzIcons.gambling,
                     'Simulate a gambling payment',
                     onTap: () => simulate(
                       () => _simulateCard(
@@ -190,7 +183,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   tile(
-                    Icons.public_rounded,
+                    HzIcons.abroad,
                     'Simulate a payment abroad',
                     onTap: () => simulate(
                       () => _simulateCard(
@@ -200,14 +193,15 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   tile(
-                    Icons.call_received_rounded,
+                    HzIcons.request,
                     'Simulate money coming in',
                     onTap: () => simulate(() async {
                       final tx = await bank.simulateIncomingPayment();
                       if (context.mounted) {
                         showBanner(
                           context,
-                          emoji: '💸',
+                          icon: HzIcons.request,
+                          tone: BannerTone.positive,
                           title:
                               '${tx.title} sent you ${formatMoney(tx.amountCents)}',
                           body: tx.reference ?? 'Bank transfer',
@@ -225,10 +219,7 @@ class ProfileScreen extends StatelessWidget {
                   for (final faq in _faqs)
                     ExpansionTile(
                       shape: const Border(),
-                      title: Text(
-                        faq.$1,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
+                      title: Text(faq.$1),
                       childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                       expandedAlignment: Alignment.centerLeft,
                       children: [Text(faq.$2)],
@@ -239,9 +230,9 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Panel(
               child: tile(
-                Icons.delete_forever_outlined,
+                HzIcons.delete,
                 'Close account and erase data',
-                color: Brand.danger,
+                color: context.hz.negative,
                 onTap: () async {
                   final ok = await confirm(
                     context,
@@ -307,14 +298,15 @@ class ProfileScreen extends StatelessWidget {
     if (tx.isDeclined) {
       showBanner(
         context,
-        emoji: '⛔',
+        icon: HzIcons.declined,
+        tone: BannerTone.negative,
         title: 'Payment declined at ${tx.title}',
         body: '${formatMoney(-tx.amountCents)} · ${tx.declineReason}',
       );
     } else {
       showBanner(
         context,
-        emoji: tx.emoji ?? '💳',
+        icon: HzIcons.category(tx.category),
         title: '${formatMoney(-tx.amountCents)} at ${tx.title}',
         body: result.roundUpCents > 0
             ? '${formatMoney(result.roundUpCents)} rounded up to your pot'
@@ -414,17 +406,14 @@ class StatementsScreen extends StatelessWidget {
                 children: [
                   for (final m in bank.statementMonths)
                     ListTile(
-                      leading: const Icon(Icons.description_outlined),
-                      title: Text(
-                        DateFormat('MMMM y').format(m),
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
+                      leading: const Icon(HzIcons.statement),
+                      title: Text(DateFormat('MMMM y').format(m)),
                       subtitle: Text(
                         m.month == bank.now.month && m.year == bank.now.year
                             ? 'So far this month'
                             : 'Closing balance ${formatMoney(bank.statementFor(m).closingCents)}',
                       ),
-                      trailing: const Icon(Icons.chevron_right_rounded),
+                      trailing: const Icon(HzIcons.chevron),
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -557,7 +546,7 @@ class StatementScreen extends StatelessWidget {
                                     fontWeight: FontWeight.w600,
                                     fontFeatures: tabular,
                                     color: t.amountCents > 0
-                                        ? Brand.mint
+                                        ? context.hz.positive
                                         : null,
                                   ),
                                 ),

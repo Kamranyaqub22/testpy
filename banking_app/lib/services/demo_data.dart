@@ -6,7 +6,6 @@ import '../models/models.dart';
 class MerchantPreset {
   const MerchantPreset(
     this.name,
-    this.emoji,
     this.category,
     this.minPence,
     this.maxPence, {
@@ -17,7 +16,6 @@ class MerchantPreset {
   });
 
   final String name;
-  final String emoji;
   final TxCategory category;
   final int minPence;
   final int maxPence;
@@ -31,32 +29,24 @@ class MerchantPreset {
 /// merchant and people names are fictional.
 class DemoData {
   static const merchants = [
-    MerchantPreset('FreshCo', '🛒', TxCategory.groceries, 1240, 6850),
-    MerchantPreset(
-      'Green Basket Market',
-      '🥬',
-      TxCategory.groceries,
-      420,
-      2190,
-    ),
-    MerchantPreset('Bean & Leaf Coffee', '☕', TxCategory.eatingOut, 285, 640),
-    MerchantPreset('Noodle Bar 88', '🍜', TxCategory.eatingOut, 1150, 3200),
-    MerchantPreset('Slice Pizza Co', '🍕', TxCategory.eatingOut, 1400, 2900),
-    MerchantPreset('CityRail', '🚆', TxCategory.transport, 280, 1460),
-    MerchantPreset('Hop Bikes', '🚲', TxCategory.transport, 150, 450),
+    MerchantPreset('FreshCo', TxCategory.groceries, 1240, 6850),
+    MerchantPreset('Green Basket Market', TxCategory.groceries, 420, 2190),
+    MerchantPreset('Bean & Leaf Coffee', TxCategory.eatingOut, 285, 640),
+    MerchantPreset('Noodle Bar 88', TxCategory.eatingOut, 1150, 3200),
+    MerchantPreset('Slice Pizza Co', TxCategory.eatingOut, 1400, 2900),
+    MerchantPreset('CityRail', TxCategory.transport, 280, 1460),
+    MerchantPreset('Hop Bikes', TxCategory.transport, 150, 450),
     MerchantPreset(
       'ZipRide',
-      '🚕',
       TxCategory.transport,
       890,
       2400,
       kind: TxKind.online,
       location: 'Online',
     ),
-    MerchantPreset('Northwind Books', '📚', TxCategory.shopping, 899, 2499),
+    MerchantPreset('Northwind Books', TxCategory.shopping, 899, 2499),
     MerchantPreset(
       'Parcelly',
-      '📦',
       TxCategory.shopping,
       1299,
       7499,
@@ -65,16 +55,14 @@ class DemoData {
     ),
     MerchantPreset(
       'Odeon Lane Cinema',
-      '🎬',
       TxCategory.entertainment,
       1150,
       2600,
       kind: TxKind.card,
     ),
-    MerchantPreset('Glow Pharmacy', '💊', TxCategory.personalCare, 349, 1899),
+    MerchantPreset('Glow Pharmacy', TxCategory.personalCare, 349, 1899),
     MerchantPreset(
       'Sharp Cuts Barbers',
-      '💈',
       TxCategory.personalCare,
       1800,
       3200,
@@ -82,7 +70,6 @@ class DemoData {
     ),
     MerchantPreset(
       'ATM Withdrawal',
-      '🏧',
       TxCategory.cash,
       2000,
       6000,
@@ -90,7 +77,6 @@ class DemoData {
     ),
     MerchantPreset(
       'Café Lumière Paris',
-      '🥐',
       TxCategory.holidays,
       680,
       2400,
@@ -99,7 +85,6 @@ class DemoData {
     ),
     MerchantPreset(
       'LuckySpin Casino',
-      '🎰',
       TxCategory.entertainment,
       1000,
       5000,
@@ -148,16 +133,21 @@ class DemoData {
     Pot(
       id: 'pot-holiday',
       name: 'Lisbon trip',
-      emoji: '🏝️',
-      colorValue: 0xFF00A3A3,
+      icon: 'palm',
+      colorValue: 0xFF0F8F9C,
       goalCents: 150000,
     ),
-    Pot(id: 'pot-rainy', name: 'Rainy day', emoji: '☔', colorValue: 0xFF5B6CFF),
+    Pot(
+      id: 'pot-rainy',
+      name: 'Rainy day',
+      icon: 'umbrella',
+      colorValue: 0xFF4A5BD4,
+    ),
     Pot(
       id: 'pot-tech',
       name: 'New laptop',
-      emoji: '💻',
-      colorValue: 0xFFBB6BD9,
+      icon: 'laptop',
+      colorValue: 0xFF9A4FD0,
       goalCents: 120000,
     ),
   ];
@@ -194,7 +184,6 @@ class DemoData {
         category: TxCategory.bills,
         payeeId: 'p3',
         reference: 'FLAT 4B RENT',
-        emoji: '🏠',
       ),
       ScheduledPayment(
         id: 's-council',
@@ -204,7 +193,6 @@ class DemoData {
         frequency: Frequency.monthly,
         nextDate: next(5),
         category: TxCategory.bills,
-        emoji: '🏛️',
       ),
       ScheduledPayment(
         id: 's-stream',
@@ -214,7 +202,6 @@ class DemoData {
         frequency: Frequency.monthly,
         nextDate: next(8),
         category: TxCategory.entertainment,
-        emoji: '📺',
       ),
       ScheduledPayment(
         id: 's-energy',
@@ -224,7 +211,6 @@ class DemoData {
         frequency: Frequency.monthly,
         nextDate: next(12),
         category: TxCategory.bills,
-        emoji: '⚡',
       ),
       ScheduledPayment(
         id: 's-gym',
@@ -234,7 +220,6 @@ class DemoData {
         frequency: Frequency.monthly,
         nextDate: next(15),
         category: TxCategory.personalCare,
-        emoji: '🏋️',
       ),
       ScheduledPayment(
         id: 's-phone',
@@ -244,7 +229,6 @@ class DemoData {
         frequency: Frequency.monthly,
         nextDate: next(20),
         category: TxCategory.bills,
-        emoji: '📱',
       ),
     ];
   }
@@ -266,7 +250,6 @@ class DemoData {
       int amount,
       TxCategory category,
       TxKind kind, {
-      String? emoji,
       String? reference,
       String? location,
       String? potId,
@@ -280,7 +263,6 @@ class DemoData {
           category: category,
           kind: kind,
           date: date,
-          emoji: emoji,
           reference: reference,
           location: location,
           potId: potId,
@@ -294,7 +276,6 @@ class DemoData {
       240000,
       TxCategory.income,
       TxKind.fasterPayment,
-      emoji: '🎉',
       reference: 'WELCOME',
     );
 
@@ -309,7 +290,6 @@ class DemoData {
           285000,
           TxCategory.income,
           TxKind.income,
-          emoji: '💼',
           reference: 'SALARY',
         );
         add(
@@ -318,7 +298,6 @@ class DemoData {
           -20000,
           TxCategory.savings,
           TxKind.pot,
-          emoji: '🏝️',
           potId: 'pot-holiday',
         );
         add(
@@ -327,7 +306,6 @@ class DemoData {
           -15000,
           TxCategory.savings,
           TxKind.pot,
-          emoji: '☔',
           potId: 'pot-rainy',
         );
       }
@@ -341,7 +319,6 @@ class DemoData {
             p.kind == ScheduleKind.directDebit
                 ? TxKind.directDebit
                 : TxKind.standingOrder,
-            emoji: p.emoji,
             reference: p.reference,
           );
         }
@@ -353,7 +330,6 @@ class DemoData {
           2450,
           TxCategory.transfers,
           TxKind.fasterPayment,
-          emoji: '👋',
           reference: 'Dinner split',
         );
       }
@@ -364,7 +340,6 @@ class DemoData {
           -30000,
           TxCategory.savings,
           TxKind.pot,
-          emoji: '💻',
           potId: 'pot-tech',
         );
       }
@@ -378,15 +353,7 @@ class DemoData {
         final m = everyday.elementAt(r.nextInt(everyday.length));
         final amount = m.minPence + r.nextInt(m.maxPence - m.minPence);
         final time = at(8 + r.nextInt(13), r.nextInt(60));
-        add(
-          time,
-          m.name,
-          -amount,
-          m.category,
-          m.kind,
-          emoji: m.emoji,
-          location: m.location,
-        );
+        add(time, m.name, -amount, m.category, m.kind, location: m.location);
         if (d > 40 && amount % 100 != 0) {
           add(
             time.add(const Duration(seconds: 1)),
@@ -394,7 +361,6 @@ class DemoData {
             -(100 - amount % 100),
             TxCategory.savings,
             TxKind.roundUp,
-            emoji: '🏝️',
             potId: 'pot-holiday',
           );
         }
@@ -407,7 +373,6 @@ class DemoData {
           -2000 * (1 + r.nextInt(3)),
           atm.category,
           atm.kind,
-          emoji: atm.emoji,
           location: 'High Street, London',
         );
       }
